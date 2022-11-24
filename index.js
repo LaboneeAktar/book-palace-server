@@ -13,8 +13,8 @@ app.get("/", (req, res) => {
 });
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const uri =
-  "mongodb+srv://<username>:<password>@cluster0.cybkh1s.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.cybkh1s.mongodb.net/?retryWrites=true&w=majority`;
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -23,6 +23,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const categoryCollection = client.db("bookPalace").collection("categories");
   } finally {
   }
 }
