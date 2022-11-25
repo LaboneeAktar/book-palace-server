@@ -25,6 +25,7 @@ async function run() {
   try {
     const categoryCollection = client.db("bookPalace").collection("categories");
     const usersCollection = client.db("bookPalace").collection("users");
+    const booksCollection = client.db("bookPalace").collection("books");
 
     //get categories data
     app.get("/categories", async (req, res) => {
@@ -33,10 +34,24 @@ async function run() {
       res.send(categories);
     });
 
+    app.get("/categories/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const category = await categoryCollection.findOne(query);
+      res.send(category);
+    });
+
     //post user data
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //API for add Product
+    app.post("/addproduct", async (req, res) => {
+      const book = req.body;
+      const result = await booksCollection.insertOne(book);
       res.send(result);
     });
 
