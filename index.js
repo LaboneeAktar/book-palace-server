@@ -24,6 +24,25 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const categoryCollection = client.db("bookPalace").collection("categories");
+    const usersCollection = client.db("bookPalace").collection("users");
+
+    //get categories data
+    app.get("/categories", async (req, res) => {
+      const query = {};
+      const categories = await categoryCollection.find(query).toArray();
+      res.send(categories);
+    });
+
+    //post user data
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //
+
+    //
   } finally {
   }
 }
