@@ -34,11 +34,12 @@ async function run() {
       res.send(categories);
     });
 
-    app.get("/categories/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: ObjectId(id) };
-      const category = await categoryCollection.findOne(query);
-      res.send(category);
+    app.get("/categories/:category", async (req, res) => {
+      const category = req.params.category;
+      // console.log(category);
+      const query = { category: category };
+      const result = await booksCollection.find(query).toArray();
+      res.send(result);
     });
 
     //post user data
@@ -49,7 +50,7 @@ async function run() {
     });
 
     //API for add Product
-    app.post("/addproduct", async (req, res) => {
+    app.post("/books", async (req, res) => {
       const book = req.body;
       const result = await booksCollection.insertOne(book);
       res.send(result);
