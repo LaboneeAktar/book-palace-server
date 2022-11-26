@@ -43,6 +43,13 @@ async function run() {
       res.send(result);
     });
 
+    //get all Users
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const users = await usersCollection.find(query).toArray();
+      res.send(users);
+    });
+
     //get users by email
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
@@ -79,6 +86,22 @@ async function run() {
       const book = req.body;
       const result = await booksCollection.insertOne(book);
       res.send(result);
+    });
+
+    //get bookings by email
+    app.get("/bookings/mybookings/:email", async (req, res) => {
+      const email = req.params.email;
+      // const decodedEmail = req.decoded.email;
+      // // console.log(decoded);
+      // if (email !== decodedEmail) {
+      //   res.status(403).send({ message: "Forbidden Access" });
+      // }
+
+      const query = {
+        "buyer.email": email,
+      };
+      const myBookings = await bookingsCollection.find(query).toArray();
+      res.send(myBookings);
     });
 
     //Add bookings
