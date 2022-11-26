@@ -43,11 +43,12 @@ async function run() {
       res.send(result);
     });
 
-    //get all users
-    app.get("/users", async (req, res) => {
-      const query = {};
-      const users = await usersCollection.find(query).toArray();
-      res.send(users);
+    //get users
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send(user);
     });
 
     //post user data
