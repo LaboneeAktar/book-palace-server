@@ -12,7 +12,7 @@ app.get("/", (req, res) => {
   res.send("Book Palace Server is Running.....");
 });
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.cybkh1s.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -88,6 +88,14 @@ async function run() {
       res.send(result);
     });
 
+    //delete product
+    app.delete("/books/mybooks/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await booksCollection.deleteOne(filter);
+      res.send(result);
+    });
+
     //get bookings by email
     app.get("/bookings/mybookings/:email", async (req, res) => {
       const email = req.params.email;
@@ -108,6 +116,14 @@ async function run() {
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingsCollection.insertOne(booking);
+      res.send(result);
+    });
+
+    //delete bookings
+    app.delete("/bookings/mybookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await bookingsCollection.deleteOne(filter);
       res.send(result);
     });
 
