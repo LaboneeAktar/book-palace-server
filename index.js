@@ -43,7 +43,7 @@ async function run() {
       res.send(result);
     });
 
-    //get users
+    //get users by email
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -56,6 +56,22 @@ async function run() {
       const user = req.body;
       const result = await usersCollection.insertOne(user);
       res.send(result);
+    });
+
+    // get added book by specific email
+    app.get("/books/mybooks/:email", async (req, res) => {
+      const email = req.params.email;
+      // const decodedEmail = req.decoded.email;
+      // // console.log(decoded);
+      // if (email !== decodedEmail) {
+      //   res.status(403).send({ message: "Forbidden Access" });
+      // }
+
+      const query = {
+        "seller.email": email,
+      };
+      const myBooks = await booksCollection.find(query).toArray();
+      res.send(myBooks);
     });
 
     //API for add Product
