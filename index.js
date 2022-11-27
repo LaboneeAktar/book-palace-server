@@ -65,9 +65,10 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/users/verified/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: ObjectId(id) };
+    //verify a seller
+    app.put("/users/verified/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
@@ -80,6 +81,13 @@ async function run() {
         options
       );
       res.send(result);
+    });
+
+    //get verified seller
+    app.get("/users/seller/verified", async (req, res) => {
+      const query = req.query.body;
+      const verifiedSeller = await usersCollection.findOne(query);
+      res.send(verifiedSeller);
     });
 
     //delete user
@@ -111,6 +119,49 @@ async function run() {
       const book = req.body;
       const result = await booksCollection.insertOne(book);
       res.send(result);
+    });
+
+    //make advertisement
+    app.put("/mybooks/advertised/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          advertised: true,
+        },
+      };
+      const result = await booksCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //Reported product
+    app.put("/books/reported/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          reported: true,
+        },
+      };
+      const result = await booksCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    //get reported product
+    app.get("/books/reported", async (req, res) => {
+      const query = { reported: true };
+      const reportedBook = await booksCollection.find(query).toArray();
+      res.send(reportedBook);
     });
 
     //delete product
