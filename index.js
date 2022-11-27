@@ -65,6 +65,23 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/users/verified/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          verified: true,
+        },
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
     //delete user
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
