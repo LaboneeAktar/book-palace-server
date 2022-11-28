@@ -47,6 +47,18 @@ async function run() {
     const booksCollection = client.db("bookPalace").collection("books");
     const bookingsCollection = client.db("bookPalace").collection("bookings");
 
+    //verify admin
+    const verifyAdmin = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await usersCollection.findOne(query);
+
+      if (user?.role !== "admin") {
+        return res.status(403).send({ message: "Forbidden Access" });
+      }
+      next();
+    };
+
     //get categories data
     app.get("/categories", async (req, res) => {
       const query = {};
@@ -103,8 +115,15 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await usersCollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+
     //verify a seller
-    app.put("/users/verified/:email", async (req, res) => {
+    app.put("/users/verified/:email", verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const filter = { email };
       const options = { upsert: true };
@@ -130,7 +149,7 @@ async function run() {
     });
 
     //delete user
-    app.delete("/users/:id", async (req, res) => {
+    app.delete("/users/:id", verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const result = await usersCollection.deleteOne(filter);
