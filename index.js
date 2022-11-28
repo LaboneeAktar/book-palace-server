@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -21,6 +22,24 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+//verifyJWT
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send("Unauthorized Access");
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 async function run() {
   try {
     const categoryCollection = client.db("bookPalace").collection("categories");
@@ -39,8 +58,27 @@ async function run() {
       const category = req.params.category;
       // console.log(category);
       const query = { category: category };
-      const result = await booksCollection.find(query).toArray();
+      const result = await booksCollection
+        .find(query)
+        .sort({ $natural: -1 })
+        .toArray();
       res.send(result);
+    });
+
+    //jwt
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      // console.log(user);
+
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "10d",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "UnAuthorized" });
     });
 
     //get all Users
@@ -84,8 +122,9 @@ async function run() {
     });
 
     //get verified seller
-    app.get("/users/seller/verified", async (req, res) => {
-      const query = req.query.body;
+    app.get("/users/seller/verified/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
       const verifiedSeller = await usersCollection.findOne(query);
       res.send(verifiedSeller);
     });
@@ -99,13 +138,13 @@ async function run() {
     });
 
     // get added book by specific email
-    app.get("/books/mybooks/:email", async (req, res) => {
+    app.get("/books/mybooks/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
-      // const decodedEmail = req.decoded.email;
-      // // console.log(decoded);
-      // if (email !== decodedEmail) {
-      //   res.status(403).send({ message: "Forbidden Access" });
-      // }
+      const decodedEmail = req.decoded.email;
+      // console.log(decoded);
+      if (email !== decodedEmail) {
+        res.status(403).send({ message: "Forbidden Access" });
+      }
 
       const query = {
         "seller.email": email,
@@ -168,7 +207,7 @@ async function run() {
     });
 
     //get reported product
-    app.get("/books/reported", async (req, res) => {
+    app.get("/books/reported", verifyJWT, async (req, res) => {
       const query = { reported: true };
       const reportedBook = await booksCollection.find(query).toArray();
       res.send(reportedBook);
@@ -183,13 +222,13 @@ async function run() {
     });
 
     //get bookings by email
-    app.get("/bookings/mybookings/:email", async (req, res) => {
+    app.get("/bookings/mybookings/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
-      // const decodedEmail = req.decoded.email;
-      // // console.log(decoded);
-      // if (email !== decodedEmail) {
-      //   res.status(403).send({ message: "Forbidden Access" });
-      // }
+      const decodedEmail = req.decoded.email;
+      // console.log(decoded);
+      if (email !== decodedEmail) {
+        res.status(403).send({ message: "Forbidden Access" });
+      }
 
       const query = {
         "buyer.email": email,
