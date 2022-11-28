@@ -139,6 +139,16 @@ async function run() {
       res.send(result);
     });
 
+    //get advertised product
+    app.get("/mybooks/advertised", async (req, res) => {
+      const query = { advertised: true };
+      const advertisedBook = await booksCollection
+        .find(query)
+        .sort({ $natural: -1 })
+        .toArray();
+      res.send(advertisedBook);
+    });
+
     //Reported product
     app.put("/books/reported/:id", async (req, res) => {
       const id = req.params.id;
